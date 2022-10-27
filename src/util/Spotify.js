@@ -1,5 +1,3 @@
-import App from "../Components/App/App";
-
 let accessToken;
 const clientID = "ac95adf7115b4030b32176dd1f24e887";
 const redirectURL = "http://localhost:3000/";
@@ -24,10 +22,10 @@ const Spotify = {
       window.location = accessURL;
     }
   },
-  async search(term) {
+  async search(term, playlistTracks) {
     const accessToken = Spotify.getAccessToken();
     const response = await fetch(
-      `https://api.spotify.com/v1/search?type=track&q=${term}`,
+      `https://api.spotify.com/v1/search?type=track&limit=50&q=${term}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -38,7 +36,15 @@ const Spotify = {
     if (!jsonResponse.tracks) {
       return [];
     }
-    return jsonResponse.tracks.items.map((track) => ({
+    let filteredJSONResponse = jsonResponse.tracks.items.filter((track) => {
+      return playlistTracks.every((playlistTrack) => {
+        return track.id !== playlistTrack.id;
+      });
+    });
+    console.log(filteredJSONResponse);
+    filteredJSONResponse = filteredJSONResponse.splice(0, 20);
+    console.log(filteredJSONResponse);
+    return filteredJSONResponse.map((track) => ({
       id: track.id,
       name: track.name,
       artist: track.artists[0].name,
